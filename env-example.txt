@@ -1,0 +1,17 @@
+# Copie este conteúdo para um arquivo chamado .env na raiz do projeto
+
+# Configurações do MySQL Local
+MYSQL_HOST=localhost
+MYSQL_USER=root
+MYSQL_PASSWORD=
+MYSQL_DATABASE=refriagro_erp
+MYSQL_PORT=3306
+
+# Configurações do Chatwoot
+CHATWOOT_URL=https://app.chatwoot.com
+CHATWOOT_ACCOUNT_ID=id_da_sua_conta
+CHATWOOT_API_TOKEN=seu_token_aqui
+CHATWOOT_INBOX_ID=id_da_caixa_de_entrada_criada
+
+# Configurações do servidor
+PORT=3000

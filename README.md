@@ -48,11 +48,21 @@ cd zapnode
 npm install
 ```
 
-### 3. Configure as variáveis de ambiente
+### 3. Configure o banco de dados MySQL
 
-Crie um arquivo `.env` na raiz do projeto:
+#### Opção A: MySQL Local (Recomendado para desenvolvimento)
+
+1. **Instale o MySQL** se ainda não tiver instalado
+2. **Crie o arquivo `.env`** na raiz do projeto:
 
 ```env
+# Configurações do MySQL Local
+MYSQL_HOST=localhost
+MYSQL_USER=root
+MYSQL_PASSWORD=sua_senha_aqui
+MYSQL_DATABASE=refriagro_erp
+MYSQL_PORT=3306
+
 # Configurações do Chatwoot
 CHATWOOT_URL=https://app.chatwoot.com
 CHATWOOT_ACCOUNT_ID=id_da_sua_conta
@@ -63,7 +73,22 @@ CHATWOOT_INBOX_ID=id_da_caixa_de_entrada_criada
 PORT=3000
 ```
 
-### 4. Crie a pasta do banco de dados
+3. **Execute o script de configuração do banco**:
+```bash
+# No MySQL Workbench, phpMyAdmin ou linha de comando
+mysql -u root -p < database-setup.sql
+```
+
+4. **Teste a conexão**:
+```bash
+node test-mysql.js
+```
+
+#### Opção B: SQLite (Alternativa mais simples)
+
+Se preferir usar SQLite, o banco será criado automaticamente na pasta `db/`.
+
+### 4. Crie a pasta do banco de dados (apenas para SQLite)
 
 ```bash
 mkdir db
@@ -92,15 +117,20 @@ npm start
 ## 🏗️ Estrutura do Projeto
 
 ```text
-zapnode.codigofonte.tv/
+zapnode/
 ├── app/
-│   ├── server.js      # Servidor principal
-│   ├── whatsapp.js    # Integração com WhatsApp Web
-│   └── webhook.js     # Endpoint para receber webhooks do Chatwoot
-├── db/                # Banco de dados SQLite (criado automaticamente)
-├── package.json       # Dependências e scripts
-├── .env              # Variáveis de ambiente (criar)
-└── README.md         # Este arquivo
+│   ├── server.js          # Servidor principal
+│   ├── whatsapp.js        # Integração com WhatsApp Web
+│   ├── webhook.js         # Endpoint para receber webhooks do Chatwoot
+│   ├── database.js        # Configuração SQLite
+│   └── mysql-database.js  # Configuração MySQL
+├── db/                    # Banco de dados SQLite (criado automaticamente)
+├── database-setup.sql     # Script para criar banco MySQL
+├── test-mysql.js          # Script para testar conexão MySQL
+├── env-example.txt        # Exemplo de configuração .env
+├── package.json           # Dependências e scripts
+├── .env                   # Variáveis de ambiente (criar)
+└── README.md              # Este arquivo
 ```
 
 ## 🔧 Configuração do Chatwoot

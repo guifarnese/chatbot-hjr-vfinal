@@ -26,9 +26,14 @@ const FOLLOW_UP_MESSAGE = "📌 Todas as instruções já foram enviadas na mens
 // Start WhatsApp client
 function startWhatsApp() {
   client = new Client({
-    authStrategy: new LocalAuth(),
-    puppeteer: { 
-      headless: true, 
+    authStrategy: new LocalAuth({
+      dataPath: './.wwebjs_auth'
+    }),
+    puppeteer: {
+      headless: true,
+      handleSIGINT: false,
+      handleSIGTERM: false,
+      handleSIGHUP: false,
       args: [
         "--no-sandbox",
         "--disable-setuid-sandbox",
@@ -43,18 +48,31 @@ function startWhatsApp() {
     },
   });
 
-  client.on("qr", (qr) => qrcode.generate(qr, { small: true }));
+  client.on("qr", (qr) => {
+    console.log("📱 QR Code received. Scan with WhatsApp:");
+    qrcode.generate(qr, { small: true });
+  });
 
   client.on("ready", () => {
     console.log("✅ Connected to WhatsApp!");
   });
 
+  client.on("authenticated", () => {
+    console.log("✅ Authentication successful!");
+  });
+
   client.on("auth_failure", (msg) => {
     console.error("❌ WhatsApp authentication failed:", msg);
+    process.exit(1);
   });
 
   client.on("disconnected", (reason) => {
     console.log("⚠️  WhatsApp disconnected:", reason);
+    cleanup();
+  });
+
+  client.on("change_state", (state) => {
+    console.log("🔄 WhatsApp state changed:", state);
   });
 
   client.on("message", async (msg) => {
@@ -113,8 +131,51 @@ function startWhatsApp() {
     }
   });
 
-  client.initialize();
+  // Handle errors to prevent crashes
+  client.on("error", (error) => {
+    console.error("❌ WhatsApp client error:", error);
+  });
+
+  // Initialize with error handling
+  client.initialize().catch((error) => {
+    console.error("❌ Failed to initialize WhatsApp client:", error);
+    process.exit(1);
+  });
 }
+
+// Cleanup function
+async function cleanup() {
+  console.log("🧹 Cleaning up...");
+  if (client) {
+    try {
+      await client.destroy();
+      console.log("✅ Client destroyed successfully");
+    } catch (error) {
+      console.error("❌ Error destroying client:", error);
+    }
+  }
+  process.exit(0);
+}
+
+// Graceful shutdown handlers
+process.on("SIGINT", async () => {
+  console.log("\n⚠️  SIGINT received. Shutting down gracefully...");
+  await cleanup();
+});
+
+process.on("SIGTERM", async () => {
+  console.log("\n⚠️  SIGTERM received. Shutting down gracefully...");
+  await cleanup();
+});
+
+process.on("uncaughtException", (error) => {
+  console.error("❌ Uncaught Exception:", error);
+  cleanup();
+});
+
+process.on("unhandledRejection", (reason, promise) => {
+  console.error("❌ Unhandled Rejection at:", promise, "reason:", reason);
+});
 
 // Export functions and WhatsApp client instance
 module.exports = {
